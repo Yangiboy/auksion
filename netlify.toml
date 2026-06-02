@@ -3,12 +3,26 @@
   publish = "eauksion-app"
   functions = "netlify/functions"
 
+# API endpoints - must be before catch-all
 [[redirects]]
   from = "/api/front/lots"
   to = "/.netlify/functions/fetch-lots"
   status = 200
   force = true
 
+[[redirects]]
+  from = "/telegram-settings"
+  to = "/.netlify/functions/telegram-settings"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/favorites"
+  to = "/.netlify/functions/favorites"
+  status = 200
+  force = true
+
+# Catch-all for SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
