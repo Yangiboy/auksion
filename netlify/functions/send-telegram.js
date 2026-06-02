@@ -1,5 +1,20 @@
 const https = require('https');
 
+// URL ning to'g'ri ekanligini tekshirish
+function isValidUrl(url) {
+  try {
+    if (!url) return false;
+    // HTTP yoki HTTPS bilan boshlashi kerak
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return false;
+    }
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Telegramga xabar yuborish
 function sendTelegramMessage(token, chatId, message) {
   return new Promise((resolve, reject) => {
@@ -45,6 +60,8 @@ function sendTelegramMessage(token, chatId, message) {
 // Telegramga rasm yuborish (URL orqali)
 function sendTelegramPhoto(token, chatId, photoUrl, caption) {
   return new Promise((resolve, reject) => {
+    console.log('📸 Sending photo URL:', photoUrl);
+    
     const data = JSON.stringify({ 
       chat_id: chatId, 
       photo: photoUrl,
@@ -71,7 +88,8 @@ function sendTelegramPhoto(token, chatId, photoUrl, caption) {
           if (response.ok) {
             resolve({ success: true });
           } else {
-            reject({ error: response.description || 'Telegram xatosi' });
+            console.error('❌ Telegram error for URL:', photoUrl, response.description);
+            reject({ error: `Failed for URL: ${photoUrl} - ${response.description || 'Telegram xatosi'}` });
           }
         } catch(e) {
           reject({ error: e.message });
@@ -79,7 +97,10 @@ function sendTelegramPhoto(token, chatId, photoUrl, caption) {
       });
     });
 
-    req.on('error', (e) => reject({ error: e.message }));
+    req.on('error', (e) => {
+      console.error('❌ Request error for URL:', photoUrl, e.message);
+      reject({ error: e.message });
+    });
     req.write(data);
     req.end();
   });
@@ -88,6 +109,8 @@ function sendTelegramPhoto(token, chatId, photoUrl, caption) {
 // Telegramga media group (rasmlar albaumi) yuborish
 function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
   return new Promise((resolve, reject) => {
+    console.log('📸 Sending media group with URLs:', photoUrls);
+    
     const media = photoUrls.map((url, index) => ({
       type: 'photo',
       media: url,
@@ -119,6 +142,7 @@ function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
           if (response.ok) {
             resolve({ success: true });
           } else {
+            console.error('❌ Telegram media group error:', response.description);
             reject({ error: response.description || 'Telegram xatosi' });
           }
         } catch(e) {
@@ -127,7 +151,10 @@ function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
       });
     });
 
-    req.on('error', (e) => reject({ error: e.message }));
+    req.on('error', (e) => {
+      console.error('❌ Request error for media group:', e.message);
+      reject({ error: e.message });
+    });
     req.write(data);
     req.end();
   });
@@ -173,14 +200,20 @@ exports.handler = async (event) => {
 
     // Rasmlar bilan yuborish
     if (data.photo_urls && data.photo_urls.length > 0) {
-      const photoUrls = data.photo_urls;
+      // Faqat to'g'ri URL larni saqlash
+      const validPhotoUrls = data.photo_urls.filter(url => isValidUrl(url));
       
-      if (photoUrls.length === 1) {
+      if (validPhotoUrls.length === 0) {
+        console.warn('⚠️ No valid photo URLs found. Sending text only.');
+        console.warn('Received URLs:', data.photo_urls);
+        // Faqat text bilan yuborish
+        await sendTelegramMessage(token, chatId, data.caption || 'No caption');
+      } else if (validPhotoUrls.length === 1) {
         // Bitta rasm
-        await sendTelegramPhoto(token, chatId, photoUrls[0], data.caption || '');
+        await sendTelegramPhoto(token, chatId, validPhotoUrls[0], data.caption || '');
       } else {
         // Bir nechta rasmlar
-        await sendTelegramMediaGroup(token, chatId, photoUrls, data.caption || '');
+        await sendTelegramMediaGroup(token, chatId, validPhotoUrls, data.caption || '');
       }
     } else if (data.message) {
       // Faqat text bilan yuborish
@@ -202,7 +235,14 @@ exports.handler = async (event) => {
     };
   } catch (error) {
     const errorMsg = error?.error || error?.message || JSON.stringify(error) || 'Noma\'lum xato';
-    console.error('Telegram xatosi:', errorMsg);
+    console.error('❌ Telegram Error:', {
+      message: errorMsg,
+      received: {
+        photo_urls: data?.photo_urls?.length || 0,
+        has_message: !!data?.message,
+        caption_length: data?.caption?.length || 0
+      }
+    });
     return {
       statusCode: 500,
       headers,
