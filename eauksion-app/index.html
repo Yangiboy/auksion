@@ -620,14 +620,6 @@ function buildModal(d) {
     <div class="pcard"><div class="plbl">Auksion sanasi</div><div class="pval" style="font-size:14px">${d.start_time_str||'—'}</div></div>
   </div>`;
 
-  if (details.length) {
-    h += '<div class="stitle"><i class="ti ti-info-circle"></i> Lot ma\'lumotlari</div><div class="dgrid">';
-    details.forEach(item => {
-      h += `<div class="ditem"><div class="dkey">${item.name?.name_uk||item.name?.name_uz||''}</div><div class="dval">${item.detail_value_as_string||'—'}</div></div>`;
-    });
-    h += '</div>';
-  }
-
   infos.forEach(info => {
     if (info.type==='info') h += `<div class="infobox"><strong>${info.title?.name_uz||''}</strong><br>${info.description?.name_uz||''}</div>`;
   });
