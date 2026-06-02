@@ -1,4 +1,5 @@
-const https = require('https');
+// Telegram Bot Handler for Netlify Functions
+// Supports: Text messages, single photos, media groups
 
 // URL ning to'g'ri ekanligini tekshirish
 function isValidUrl(url) {
@@ -15,149 +16,117 @@ function isValidUrl(url) {
   }
 }
 
+// Fetch bilan timeout support
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
 // Telegramga xabar yuborish
-function sendTelegramMessage(token, chatId, message) {
-  return new Promise((resolve, reject) => {
-    const data = JSON.stringify({ 
-      chat_id: chatId, 
-      text: message, 
-      parse_mode: 'HTML' 
-    });
-    
-    const options = {
-      hostname: 'api.telegram.org',
-      path: `/bot${token}/sendMessage`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
-      },
-    };
+async function sendTelegramMessage(token, chatId, message) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text: message,
+    parse_mode: 'HTML'
+  };
 
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        try {
-          const response = JSON.parse(body);
-          if (response.ok) {
-            resolve({ success: true });
-          } else {
-            reject({ error: response.description || 'Telegram xatosi' });
-          }
-        } catch(e) {
-          reject({ error: e.message });
-        }
-      });
-    });
+  console.log('📝 Sending text message to chat:', chatId);
+  
+  const response = await fetchWithTimeout(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }, 15000);
 
-    req.on('error', (e) => reject({ error: e.message }));
-    req.write(data);
-    req.end();
-  });
+  const result = await response.json();
+  
+  if (!result.ok) {
+    const error = result.description || 'Unknown Telegram error';
+    console.error('❌ Telegram sendMessage error:', error);
+    throw new Error(error);
+  }
+  
+  console.log('✅ Message sent successfully');
+  return { success: true };
 }
 
 // Telegramga rasm yuborish (URL orqali)
-function sendTelegramPhoto(token, chatId, photoUrl, caption) {
-  return new Promise((resolve, reject) => {
-    console.log('📸 Sending photo URL:', photoUrl);
-    
-    const data = JSON.stringify({ 
-      chat_id: chatId, 
-      photo: photoUrl,
-      caption: caption,
-      parse_mode: 'HTML'
-    });
-    
-    const options = {
-      hostname: 'api.telegram.org',
-      path: `/bot${token}/sendPhoto`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
-      },
-    };
+async function sendTelegramPhoto(token, chatId, photoUrl, caption) {
+  const url = `https://api.telegram.org/bot${token}/sendPhoto`;
+  const payload = {
+    chat_id: chatId,
+    photo: photoUrl,
+    caption: caption,
+    parse_mode: 'HTML'
+  };
 
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        try {
-          const response = JSON.parse(body);
-          if (response.ok) {
-            resolve({ success: true });
-          } else {
-            console.error('❌ Telegram error for URL:', photoUrl, response.description);
-            reject({ error: `Failed for URL: ${photoUrl} - ${response.description || 'Telegram xatosi'}` });
-          }
-        } catch(e) {
-          reject({ error: e.message });
-        }
-      });
-    });
+  console.log('📸 Sending photo:', photoUrl);
+  
+  const response = await fetchWithTimeout(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }, 15000);
 
-    req.on('error', (e) => {
-      console.error('❌ Request error for URL:', photoUrl, e.message);
-      reject({ error: e.message });
-    });
-    req.write(data);
-    req.end();
-  });
+  const result = await response.json();
+  
+  if (!result.ok) {
+    const error = result.description || 'Unknown Telegram error';
+    console.error('❌ Telegram sendPhoto error:', error, 'URL:', photoUrl);
+    throw new Error(`Failed to send photo: ${error}`);
+  }
+  
+  console.log('✅ Photo sent successfully');
+  return { success: true };
 }
 
 // Telegramga media group (rasmlar albaumi) yuborish
-function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
-  return new Promise((resolve, reject) => {
-    console.log('📸 Sending media group with URLs:', photoUrls);
-    
-    const media = photoUrls.map((url, index) => ({
-      type: 'photo',
-      media: url,
-      caption: index === 0 ? caption : '', // Faqat birinchi rasmga caption
-      parse_mode: 'HTML'
-    }));
+async function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
+  const url = `https://api.telegram.org/bot${token}/sendMediaGroup`;
+  
+  const media = photoUrls.map((photoUrl, index) => ({
+    type: 'photo',
+    media: photoUrl,
+    caption: index === 0 ? caption : '',
+    parse_mode: 'HTML'
+  }));
 
-    const data = JSON.stringify({
-      chat_id: chatId,
-      media: media
-    });
+  const payload = {
+    chat_id: chatId,
+    media: media
+  };
 
-    const options = {
-      hostname: 'api.telegram.org',
-      path: `/bot${token}/sendMediaGroup`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
-      },
-    };
+  console.log('📸 Sending media group with', photoUrls.length, 'photos');
+  
+  const response = await fetchWithTimeout(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }, 20000);
 
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        try {
-          const response = JSON.parse(body);
-          if (response.ok) {
-            resolve({ success: true });
-          } else {
-            console.error('❌ Telegram media group error:', response.description);
-            reject({ error: response.description || 'Telegram xatosi' });
-          }
-        } catch(e) {
-          reject({ error: e.message });
-        }
-      });
-    });
-
-    req.on('error', (e) => {
-      console.error('❌ Request error for media group:', e.message);
-      reject({ error: e.message });
-    });
-    req.write(data);
-    req.end();
-  });
+  const result = await response.json();
+  
+  if (!result.ok) {
+    const error = result.description || 'Unknown Telegram error';
+    console.error('❌ Telegram sendMediaGroup error:', error);
+    throw new Error(error);
+  }
+  
+  console.log('✅ Media group sent successfully');
+  return { success: true };
 }
 
 exports.handler = async (event) => {
@@ -188,12 +157,16 @@ exports.handler = async (event) => {
     const token = process.env.TELEGRAM_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
+    console.log('🔧 Telegram Token present:', !!token);
+    console.log('🔧 Telegram Chat ID present:', !!chatId);
+
     if (!token || !chatId) {
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({ 
-          error: 'Telegram sozlamalari to\'ldirilmagan. TELEGRAM_TOKEN va TELEGRAM_CHAT_ID environment variables ni sozlang.' 
+          error: 'Telegram settings not configured. Set TELEGRAM_TOKEN and TELEGRAM_CHAT_ID environment variables.',
+          success: false
         })
       };
     }
@@ -203,11 +176,13 @@ exports.handler = async (event) => {
       // Faqat to'g'ri URL larni saqlash
       const validPhotoUrls = data.photo_urls.filter(url => isValidUrl(url));
       
+      console.log(`📊 Received ${data.photo_urls.length} URLs, ${validPhotoUrls.length} are valid`);
+      
       if (validPhotoUrls.length === 0) {
         console.warn('⚠️ No valid photo URLs found. Sending text only.');
         console.warn('Received URLs:', data.photo_urls);
         // Faqat text bilan yuborish
-        await sendTelegramMessage(token, chatId, data.caption || 'No caption');
+        await sendTelegramMessage(token, chatId, data.caption || 'No caption provided');
       } else if (validPhotoUrls.length === 1) {
         // Bitta rasm
         await sendTelegramPhoto(token, chatId, validPhotoUrls[0], data.caption || '');
@@ -223,7 +198,8 @@ exports.handler = async (event) => {
         statusCode: 400,
         headers,
         body: JSON.stringify({ 
-          error: 'message yoki photo_urls talab qilinadi' 
+          error: 'Either message or photo_urls must be provided',
+          success: false
         })
       };
     }
@@ -234,15 +210,12 @@ exports.handler = async (event) => {
       body: JSON.stringify({ success: true })
     };
   } catch (error) {
-    const errorMsg = error?.error || error?.message || JSON.stringify(error) || 'Noma\'lum xato';
-    console.error('❌ Telegram Error:', {
+    const errorMsg = error?.message || error?.toString?.() || JSON.stringify(error) || 'Unknown error';
+    console.error('❌ Handler Error:', {
       message: errorMsg,
-      received: {
-        photo_urls: data?.photo_urls?.length || 0,
-        has_message: !!data?.message,
-        caption_length: data?.caption?.length || 0
-      }
+      stack: error?.stack
     });
+    
     return {
       statusCode: 500,
       headers,
