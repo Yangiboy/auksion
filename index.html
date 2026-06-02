@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>E-Auksion — Avtomobil lotlari</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg1:#fff;--bg2:#f5f5f4;--bg3:#eeede8;--bgi:#e6f1fb;--bgw:#faeeda;--bgd:#eaf3de;
+  --t1:#1a1a18;--t2:#5f5e5a;--t3:#888780;--ti:#185fa5;--tw:#854f0b;--td:#3b6d11;
+  --b1:rgba(0,0,0,.12);--b2:rgba(0,0,0,.22);--b3:rgba(0,0,0,.35);
+  --r1:8px;--r2:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg1:#1e1e1c;--bg2:#2a2a28;--bg3:#141412;--bgi:#042c53;--bgw:#412402;--bgd:#173404;
+  --t1:#f0ede6;--t2:#b4b2a9;--t3:#888780;--ti:#85b7eb;--tw:#fac775;--td:#c0dd97;
+  --b1:rgba(255,255,255,.1);--b2:rgba(255,255,255,.2);--b3:rgba(255,255,255,.35);
+}}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg3);color:var(--t1)}
+
+/* Header */
+.hdr{background:var(--bg1);border-bottom:.5px solid var(--b1);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;flex-wrap:wrap;gap:8px}
+.hdr-logo{font-size:17px;font-weight:500;display:flex;align-items:center;gap:6px}
+.hdr-sub{font-size:12px;color:var(--t2)}
+.stats{margin-left:auto;font-size:13px;color:var(--t2);white-space:nowrap}
+
+/* Filters */
+.filters{background:var(--bg1);border-bottom:.5px solid var(--b1);padding:10px 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fgroup{display:flex;align-items:center;gap:6px}
+.flbl{font-size:12px;color:var(--t2);white-space:nowrap}
+.finput{font-size:13px;padding:5px 10px;border:.5px solid var(--b2);border-radius:var(--r1);background:var(--bg2);color:var(--t1);outline:none;height:32px}
+.finput:focus{border-color:var(--b3)}
+.fbtn{font-size:13px;padding:5px 14px;border:.5px solid var(--b2);border-radius:var(--r1);background:var(--bg2);color:var(--t1);cursor:pointer;height:32px}
+.fbtn:hover{background:var(--bg3)}
+.fbtn-apply{background:#185fa5;color:#fff;border-color:#185fa5}
+.fbtn-apply:hover{background:#0c447c;border-color:#0c447c}
+.fbtn-clear{color:var(--t3)}
+#f-favorites{opacity:0.6;border-color:rgba(0,0,0,.15)}
+#f-favorites:hover{background:var(--bgw);border-color:rgba(0,0,0,.15)}
+#f-favorites.active{opacity:1;background:var(--bgw)}
+.card-fav-btn{transition:all .2s}
+.card-fav-btn:hover{transform:scale(1.2)}
+.card-trash-btn{transition:all .2s !important}
+.card-trash-btn:hover{transform:scale(1.25);opacity:1}
+#f-settings{opacity:0.7;border-color:rgba(0,0,0,.15)}
+#f-settings:hover{background:var(--bgd);border-color:rgba(0,0,0,.15)}
+.tg-form{display:flex;flex-direction:column;gap:12px}
+.tg-field{display:flex;flex-direction:column;gap:4px}
+.tg-field label{font-size:12px;font-weight:500;color:var(--t2)}
+.tg-field input{font-size:13px;padding:8px 10px;border:.5px solid var(--b2);border-radius:var(--r1);background:var(--bg2);color:var(--t1);outline:none}
+.tg-field input:focus{border-color:var(--b3)}
+.tg-button{background:#185fa5;color:#fff;border:none;border-radius:var(--r1);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer}
+.tg-button:hover{background:#0c447c}
+.tg-message{padding:10px;border-radius:var(--r1);margin-bottom:8px;font-size:12px;display:none}
+.tg-message.success{background:#d4edda;color:#155724;border:.5px solid #c3e6cb;display:block}
+.tg-message.error{background:#f8d7da;color:#721c24;border:.5px solid #f5c6cb;display:block}
+.telegram-btn{display:flex;align-items:center;gap:6px;background:#0088cc;color:#fff;border:none;border-radius:var(--r1);padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;width:100%;justify-content:center;margin-top:12px}
+.telegram-btn:hover{background:#0077b6}
+.telegram-btn:disabled{background:#999;cursor:not-allowed}
+.telegram-btn i{font-size:16px}
+.telegram-progress{display:none;margin-top:12px;padding:12px;background:var(--bgi);border-radius:var(--r1);border-left:3px solid #185fa5}
+.telegram-progress.active{display:block}
+.telegram-progress-text{font-size:12px;color:var(--t2);margin-bottom:6px}
+.progress-bar{width:100%;height:6px;background:var(--b1);border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:#185fa5;width:0%;transition:width .3s}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;padding:16px}
+.card{background:var(--bg1);border:.5px solid var(--b1);border-radius:var(--r2);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
+.card:hover{border-color:var(--b3);transform:translateY(-2px)}
+.card-img-wrap{position:relative;overflow:hidden}
+.card-img{width:100%;height:180px;object-fit:cover;background:var(--bg2);display:block;transition:transform .2s}
+.card-img-wrap:hover .card-img{transform:scale(1.03)}
+.card-img-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background .2s;cursor:zoom-in}
+.card-img-overlay:hover{background:rgba(0,0,0,.25)}
+.card-img-overlay i{color:#fff;font-size:28px;opacity:0;transition:opacity .2s}
+.card-img-overlay:hover i{opacity:1}
+
+/* Auction type badge on image */
+.atype-badge{position:absolute;top:8px;left:8px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--r1);backdrop-filter:blur(4px)}
+.atype-up{background:rgba(15,110,86,.85);color:#fff}
+.atype-down{background:rgba(162,45,45,.85);color:#fff}
+
+.card-body{padding:12px}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px}
+.card-title{font-size:15px;font-weight:500}
+.lot-num{font-size:11px;color:var(--t3);white-space:nowrap;margin-left:8px}
+.card-addr{font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-prices{display:flex;justify-content:space-between;margin-bottom:6px}
+.lbl{font-size:11px;color:var(--t3)}
+.val{font-size:13px;font-weight:500}
+.val-g{color:#0f6e56}
+.card-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.badge{font-size:11px;padding:3px 7px;border-radius:var(--r1);display:inline-flex;align-items:center;gap:3px;font-weight:500}
+.badge-blue{background:var(--bgi);color:var(--ti)}
+.badge-green{background:var(--bgd);color:var(--td)}
+.badge-amber{background:var(--bgw);color:var(--tw)}
+.card-ft{display:flex;gap:8px;font-size:12px;color:var(--t3);padding-top:8px;border-top:.5px solid var(--b1);align-items:center}
+.card-ft-right{margin-left:auto;font-size:11px}
+
+.loader{text-align:center;padding:32px;color:var(--t2);font-size:14px;display:none}
+.sentinel{height:40px}
+.empty{text-align:center;padding:60px 20px;color:var(--t2);font-size:15px}
+
+/* Modal */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 12px}
+.modal{background:var(--bg1);border-radius:var(--r2);width:100%;max-width:680px;margin:auto}
+.mhdr{padding:16px 20px;border-bottom:.5px solid var(--b1);display:flex;align-items:center;gap:12px}
+.mtitle{font-size:18px;font-weight:500;flex:1}
+.mclose{background:none;border:.5px solid var(--b2);border-radius:var(--r1);padding:6px 12px;cursor:pointer;color:var(--t2);font-size:22px;line-height:1}
+.mclose:hover{background:var(--bg2)}
+.mbody{padding:20px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:20px}
+.gthumb{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r1);cursor:pointer;border:1px solid var(--b1);transition:border-color .15s,transform .1s}
+.gthumb:hover{border-color:var(--b3);transform:scale(1.03)}
+.stitle{font-size:12px;font-weight:500;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 10px;display:flex;align-items:center;gap:6px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b1);border:.5px solid var(--b1);border-radius:var(--r1);overflow:hidden;margin-bottom:16px}
+.ditem{background:var(--bg1);padding:10px 12px}
+.dkey{font-size:11px;color:var(--t2);margin-bottom:3px}
+.dval{font-size:13px;font-weight:500}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.pcard{background:var(--bg2);border-radius:var(--r1);padding:12px}
+.plbl{font-size:12px;color:var(--t2);margin-bottom:4px}
+.pval{font-size:18px;font-weight:500}
+.infobox{background:var(--bgi);border-left:3px solid #185fa5;border-radius:0 var(--r1) var(--r1) 0;padding:12px;font-size:13px;line-height:1.6;margin-bottom:12px}
+.docs{display:flex;flex-direction:column;gap:6px}
+.doc{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ti);text-decoration:none;padding:8px 10px;border:.5px solid var(--b1);border-radius:var(--r1)}
+.doc:hover{background:var(--bg2)}
+.visits{display:flex;flex-direction:column;gap:6px}
+.vitem{font-size:13px;padding:8px 10px;background:var(--bg2);border-radius:var(--r1);display:flex;align-items:center;gap:8px}
+.contact{background:var(--bg2);border-radius:var(--r1);padding:12px;font-size:13px;line-height:1.8;margin-bottom:4px}
+.applybtn{display:block;width:100%;padding:12px;background:#185fa5;color:#fff;border:none;border-radius:var(--r1);font-size:15px;font-weight:500;cursor:pointer;text-align:center;margin-top:16px;text-decoration:none}
+.applybtn:hover{background:#0c447c}
+.mload{text-align:center;padding:40px;color:var(--t2);font-size:14px}
+
+/* Lightbox */
+.lbg{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.limg{max-width:92vw;max-height:84vh;object-fit:contain;border-radius:var(--r1)}
+.lcap{font-size:13px;color:rgba(255,255,255,.6);text-align:center}
+.lclose{position:fixed;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;padding:7px 12px;border-radius:var(--r1);cursor:pointer;line-height:1}
+.lclose:hover{background:rgba(255,255,255,.25)}
+.lnav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;font-size:30px;padding:12px 16px;border-radius:var(--r1);cursor:pointer;line-height:1}
+.lnav:hover{background:rgba(255,255,255,.25)}
+.lprev{left:14px}.lnext{right:14px}
+.ldots{display:flex;gap:6px;justify-content:center}
+.ldot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;border:none}
+.ldot.active{background:#fff}
+
+@media(max-width:500px){.dgrid,.pgrid{grid-template-columns:1fr}.filters{gap:6px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-logo"><i class="ti ti-car"></i> E-Auksion</div>
+    <div class="hdr-sub">Avtomobil lotlari · Yengil transport</div>
+  </div>
+  <div class="stats" id="stats">Yuklanmoqda...</div>
+</div>
+
+<div class="filters">
+  <div class="fgroup">
+    <span class="flbl"><i class="ti ti-calendar" style="font-size:14px"></i> Sana:</span>
+    <input type="date" class="finput" id="f-date" style="width:150px"/>
+  </div>
+  <div class="fgroup">
+    <span class="flbl"><i class="ti ti-calendar-stats" style="font-size:14px"></i> Yili:</span>
+    <input type="number" class="finput" id="f-year" placeholder="masalan: 2021" style="width:120px" min="1990" max="2030"/>
+  </div>
+  <div class="fgroup">
+    <span class="flbl"><i class="ti ti-cash" style="font-size:14px"></i> Narx:</span>
+    <input type="number" class="finput" id="f-price-min" placeholder="Min" style="width:100px" min="0"/>
+    <span style="color:var(--t3)">—</span>
+    <input type="number" class="finput" id="f-price-max" placeholder="Max" style="width:100px" min="0"/>
+  </div>
+  <div class="fgroup">
+    <span class="flbl"><i class="ti ti-hash" style="font-size:14px"></i> Lot №:</span>
+    <input type="text" class="finput" id="f-lot-number" placeholder="Lot raqami" style="width:120px"/>
+  </div>
+  <button class="fbtn fbtn-apply" id="f-apply"><i class="ti ti-search"></i> Qidirish</button>
+  <button class="fbtn fbtn-clear" id="f-clear"><i class="ti ti-x"></i> Tozalash</button>
+  <button class="fbt
+  n" id="f-favorites" style="margin-left:auto;background:var(--bgw);color:var(--tw)"><i class="ti ti-heart-filled"></i> Sevimlilar <span id="fav-count" style="background:rgba(0,0,0,.15);border-radius:50%;padding:2px 6px;margin-left:4px;font-size:11px">0</span></button>
+  <button class="fbtn" id="f-settings" style="background:var(--bgd);color:var(--td)"><i class="ti ti-settings"></i> Telegram</button>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="loader" id="loader"><i class="ti ti-loader-2"></i> Yuklanmoqda...</div>
+<div class="sentinel" id="sentinel"></div>
+
+<div class="mbg" id="modal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle" id="mtitle">...</div>
+      <button class="mclose" id="mclose" aria-label="Yopish">×</button>
+    </div>
+    <div class="mbody" id="mbody"><div class="mload">Yuklanmoqda...</div></div>
+  </div>
+</div>
+
+<div class="mbg" id="settings-modal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle">Telegram Sozlamalari</div>
+      <button class="mclose" id="settings-close" aria-label="Yopish">×</button>
+    </div>
+    <div class="mbody">
+      <div id="tg-message" class="tg-message"></div>
+      <form class="tg-form" id="settings-form">
+        <div class="tg-field">
+          <label for="tg-token">Telegram Bot Tokeni:</label>
+          <input type="password" id="tg-token" placeholder="123456789:ABCDEfghij..." required/>
+        </div>
+        <div class="tg-field">
+          <label for="tg-chat-id">Chat ID:</label>
+          <input type="text" id="tg-chat-id" placeholder="masalan: -1001234567890" required/>
+        </div>
+        <button type="submit" class="tg-button"><i class="ti ti-check"></i> Saqlash</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="lbg" id="lb" role="dialog" aria-modal="true">
+  <button class="lclose" id="lclose">×</button>
+  <button class="lnav lprev" id="lprev">&#8249;</button>
+  <img class="limg" id="limg" src="" alt="Lot rasmi"/>
+  <div class="lcap" id="lcap"></div>
+  <div class="ldots" id="ldots"></div>
+  <button class="lnav lnext" id="lnext">&#8250;</button>
+</div>
+
+<script>
+const TOKEN = "Bearer eyaiywxnijogikhtmju2iiwginr5cci6icjkv1qsicjjdhkioiaiiib9.nmu0zmi3ymi0njcyzwmwnmriotgwnzcwmzy4yjjhmmyymdnjztjjnq.qtzcufkywzkwtnebceg3sccnqia2jr11ccbvy_lhgoo";
+const CANCELLED_STATUSES = [30, 31, 32];
+
+let page = 1, totalPages = 999, loading = false;
+let filterDate = null, filterYear = null;
+let filterPriceMin = null, filterPriceMax = null;
+let filterLotNumber = null;
+let favorites = [];
+let viewingFavorites = false;
+let allLots = []; // Client-side filtrlash uchun barcha lotlar
+
+const fmt = n => Number(n).toLocaleString('uz-UZ');
+
+// Favorites ni serverdan olish
+async function loadFavorites() {
+  try {
+    favorites = await fetch('/favorites').then(r => r.json());
+    document.getElementById('fav-count').textContent = favorites.length;
+    updateHeartIcons();
+  } catch(e) { console.error(e); }
+}
+
+// Heart icon update qilish
+function updateHeartIcons() {
+  document.querySelectorAll('.card-fav-btn').forEach(btn => {
+    const lotId = btn.dataset.lotId;
+    const isFav = favorites.includes(parseInt(lotId));
+    btn.innerHTML = isFav 
+      ? '<i class="ti ti-heart-filled" style="color:#c41e3a"></i>'
+      : '<i class="ti ti-heart"></i>';
+  });
+}
+
+// Lot sevimliga qo'shish/olib tashlash
+async function toggleFavorite(lotId) {
+  try {
+    const res = await fetch('/favorites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lot_id: parseInt(lotId) })
+    });
+    favorites = await res.json();
+    document.getElementById('fav-count').textContent = favorites.length;
+    updateHeartIcons();
+    // Agar sevimlilar tab'da bo'lsa refresh qil
+    if (viewingFavorites) {
+      loadFavoritesView();
+    }
+  } catch(e) { console.error(e); }
+}
+
+function buildBody(p) {
+  let sort_type = 1;
+  let zz_md5 = '6fd8c940d5010d4cdc93ef3843b10949';
+  
+  const body = {
+    sort_type: sort_type, confiscant_groups_id:2, confiscant_categories_id:7,
+    regions_id:null, areas_id:null, mahallas_id:null, address:'', lot_number:'',
+    hashtag:'', date_from:null, date_to:null, auction_date:null, is_term_order:-1,
+    exec_order_type:0, lot_type:0, auction_type:0, finished_auction_status:0,
+    filtered_auction_status:0, is_ownership:-1, orderby_:0,
+    current_page:p, per_page:12, dynamic_filters:[], bank_id:null,
+    zz_md5: zz_md5
+  };
+  
+  if (filterLotNumber) {
+    body.lot_number = filterLotNumber;
+    body.sort_type = 5;
+    body.zz_md5 = '3f3dfee43e39f0f4611c09bbaa747cbe';
+  } else if (filterDate) {
+    body.auction_date = filterDate;
+  } else if (filterYear) {
+    body.dynamic_filters = [{
+      name:'CAT_TRANSPORTS_CHIQARILGAN_YILI',
+      first_value: String(filterYear),
+      is_double:'1',
+      second_value: null
+    }];
+    body.zz_md5 = '41fa55cce0e9ebf069614800b08a40a6';
+  }
+  return body;
+}
+
+async function fetchLots(p) {
+  const r = await fetch('/api/front/lots', {
+    method:'POST',
+    headers:{'Content-Type':'application/json', authorization:TOKEN},
+    body: JSON.stringify(buildBody(p))
+  });
+  return r.json();
+}
+
+async function fetchLot(id) {
+  const r = await fetch('/api/front/lot-info?lot_id='+id+'&lang=uk', {
+    headers:{authorization:TOKEN}
+  });
+  return r.json();
+}
+
+function lotTypeBadge(lot) {
+  if (lot.lot_type === 2) {
+    return '<span class="atype-badge atype-down"><i class="ti ti-trending-down"></i> Tushib boruvchi</span>';
+  }
+  return '<span class="atype-badge atype-up"><i class="ti ti-trending-up"></i> Oshib boruvchi</span>';
+}
+
+function card(lot) {
+  const d = document.createElement('div');
+  d.className = 'card';
+  const orderCnt = lot.user_order_cnt;
+  const orderBadge = orderCnt
+    ? `<span class="badge badge-amber"><i class="ti ti-users"></i> ${orderCnt} ariza</span>`
+    : `<span class="badge" style="background:var(--bg2);color:var(--t3)"><i class="ti ti-users"></i> Ariza yo'q</span>`;
+
+  d.innerHTML = `
+    <div class="card-img-wrap">
+      <img class="card-img" src="${lot.media_url}" alt="${lot.name}" loading="lazy" onerror="this.style.display='none'"/>
+      ${lotTypeBadge(lot)}
+      <div class="card-img-overlay" data-zoom="1"><i class="ti ti-zoom-in"></i></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-title">${lot.name}</div>
+        <span class="lot-num">№${lot.lot_number}</span>
+      </div>
+      <div class="card-addr"><i class="ti ti-map-pin" style="font-size:12px"></i> ${lot.full_address}</div>
+      <div class="card-prices">
+        <div><div class="lbl">Boshlang'ich narx</div><div class="val val-g">${fmt(lot.start_price)} UZS</div></div>
+        <div style="text-align:right"><div class="lbl">Zakalat ${lot.zaklad_percent}%</div><div class="val">${fmt(Math.round(lot.zaklad_summa))} UZS</div></div>
+      </div>
+      <div class="card-meta">
+        <span class="badge badge-blue"><i class="ti ti-calendar"></i>${lot.auction_date_str}</span>
+        ${orderBadge}
+      </div>
+      <div class="card-ft">
+        <span><i class="ti ti-eye"></i> ${lot.view_count}</span>
+        <span><i class="ti ti-heart"></i> ${lot.count_favourite}</span>
+        <span class="card-ft-right">Ariza: ${lot.order_end_time_str}</span>
+        <button class="card-fav-btn" data-lot-id="${lot.id}" data-lot-name="${lot.name}" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:18px;padding:0;margin-left:auto" title="Sevimliga qo'shish"><i class="ti ti-heart"></i></button>
+        ${viewingFavorites ? `<button class="card-trash-btn" data-lot-id="${lot.id}" style="background:none;border:none;color:#c41e3a;cursor:pointer;font-size:16px;padding:0;margin-left:6px" title="O'chirish"><i class="ti ti-trash"></i></button>` : ''}
+      </div>
+    </div>`;
+
+  d.querySelector('[data-zoom]').addEventListener('click', e => {
+    e.stopPropagation();
+    openLightbox([lot.media_url], 0, [lot.name]);
+  });
+  d.querySelector('.card-fav-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleFavorite(lot.id);
+  });
+  const trashBtn = d.querySelector('.card-trash-btn');
+  if (trashBtn) {
+    trashBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFavorite(lot.id);
+    });
+  }
+  d.addEventListener('click', () => openModal(lot.id, lot.name));
+  return d;
+}
+
+function applyClientFilters(lots) {
+  return lots.filter(lot => {
+    // Narx filtri: Boshlang'ich narx bo'yicha filtrlash
+    if (filterPriceMin !== null && lot.start_price < filterPriceMin) return false;
+    if (filterPriceMax !== null && lot.start_price > filterPriceMax) return false;
+    return true;
+  });
+}
+
+async function loadMore() {
+  if (loading || page > totalPages || viewingFavorites) return;
+  loading = true;
+  document.getElementById('loader').style.display = 'block';
+  try {
+    const data = await fetchLots(page);
+    if (page === 1) {
+      totalPages = data.totalPages;
+      allLots = []; // Yangi filtrda yangi lotlar
+      document.getElementById('stats').textContent = data.totalRows + ' ta lot';
+      if (!data.rows || !data.rows.length) {
+        document.getElementById('grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="ti ti-search-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Natija topilmadi</div>';
+      }
+    }
+    const g = document.getElementById('grid');
+    const rows = (data.rows || []).filter(lot => !CANCELLED_STATUSES.includes(lot.lot_statuses_id));
+    
+    // Barcha lotlarni saqlash (client-side filtrlash uchun)
+    allLots = allLots.concat(rows);
+    
+    // Client-side filtrlash
+    const filteredRows = applyClientFilters(rows);
+    filteredRows.forEach(lot => g.appendChild(card(lot)));
+    page++;
+  } catch(e) { console.error(e); }
+  loading = false;
+  document.getElementById('loader').style.display = 'none';
+  
+  // Avtomatik tekshir - agar kontenti kam bo'lsa yana yukla
+  checkAndLoadMore();
+}
+
+// Kontenti ekran balandligida 30% oshiq bo'lguncha yuklash
+function checkAndLoadMore() {
+  if (viewingFavorites) return;
+  const grid = document.getElementById('grid');
+  const viewportHeight = window.innerHeight;
+  const contentHeight = grid.scrollHeight;
+  const minRequired = viewportHeight * 1.3;
+  
+  if (contentHeight < minRequired && page <= totalPages && !loading) {
+    loadMore();
+  }
+}
+
+// Initial load: oldindan 2 sahifa yukla
+async function preloadInitialPages() {
+  await loadMore();
+  if (page <= totalPages) {
+    await loadMore();
+  }
+}
+
+const obs = new IntersectionObserver(e => { if(e[0].isIntersecting) loadMore(); }, {rootMargin:'200px'});
+obs.observe(document.getElementById('sentinel'));
+
+// Sahifa yuklanganda avtomatik 2 sahifa yuklash va favorites olish
+preloadInitialPages();
+loadFavorites();
+
+// Window resize'da tekshir
+window.addEventListener('resize', checkAndLoadMore);
+
+// Filters
+document.getElementById('f-apply').addEventListener('click', applyFilters);
+document.getElementById('f-clear').addEventListener('click', () => {
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-year').value = '';
+  document.getElementById('f-price-min').value = '';
+  document.getElementById('f-price-max').value = '';
+  document.getElementById('f-lot-number').value = '';
+  filterDate = null; filterYear = null;
+  filterPriceMin = null; filterPriceMax = null;
+  filterLotNumber = null;
+  viewingFavorites = false;
+  document.getElementById('f-favorites').classList.remove('active');
+  resetGrid();
+});
+document.getElementById('f-favorites').addEventListener('click', () => {
+  viewingFavorites = !viewingFavorites;
+  document.getElementById('f-favorites').classList.toggle('active');
+  if (viewingFavorites) {
+    loadFavoritesView();
+  } else {
+    resetGrid();
+  }
+});
+document.getElementById('f-date').addEventListener('keydown', e => { if(e.key==='Enter') applyFilters(); });
+document.getElementById('f-year').addEventListener('keydown', e => { if(e.key==='Enter') applyFilters(); });
+document.getElementById('f-price-min').addEventListener('keydown', e => { if(e.key==='Enter') applyFilters(); });
+document.getElementById('f-price-max').addEventListener('keydown', e => { if(e.key==='Enter') applyFilters(); });
+document.getElementById('f-lot-number').addEventListener('keydown', e => { if(e.key==='Enter') applyFilters(); });
+
+function applyFilters() {
+  const dateVal = document.getElementById('f-date').value;
+  const yearVal = document.getElementById('f-year').value;
+  const priceMinVal = document.getElementById('f-price-min').value;
+  const priceMaxVal = document.getElementById('f-price-max').value;
+  const lotNumberVal = document.getElementById('f-lot-number').value;
+  
+  filterDate = dateVal ? dateVal.split('-').reverse().join('.') : null; // yyyy-mm-dd -> dd.mm.yyyy
+  filterYear = yearVal ? parseInt(yearVal) : null;
+  filterPriceMin = priceMinVal ? parseInt(priceMinVal) : null;
+  filterPriceMax = priceMaxVal ? parseInt(priceMaxVal) : null;
+  filterLotNumber = lotNumberVal ? lotNumberVal.trim() : null;
+  
+  viewingFavorites = false;
+  document.getElementById('f-favorites').classList.remove('active');
+  resetGrid();
+}
+
+// Sevimli lotlarni yuklash
+async function loadFavoritesView() {
+  document.getElementById('grid').innerHTML = '<div class="loader" style="display:block;grid-column:1/-1"><i class="ti ti-loader-2"></i> Sevimlilar yuklanmoqda...</div>';
+  
+  if (favorites.length === 0) {
+    document.getElementById('grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="ti ti-heart-broken" style="font-size:32px;display:block;margin-bottom:8px"></i>Sevimlilar bo\'sh</div>';
+    return;
+  }
+  
+  document.getElementById('stats').textContent = favorites.length + ' ta sevimli lot';
+  document.getElementById('grid').innerHTML = '';
+  
+  for (let lotId of favorites) {
+    try {
+      const data = await fetchLot(lotId);
+      if (data && data.id) {
+        // Lot-info response'ni card formatiga o'tkazish
+        const cardData = {
+          ...data,
+          media_url: data.confiscant_images_list?.[0]?.media_url || '',
+          full_address: data.joylashgan_manzil || '',
+          view_count: 0,
+          count_favourite: 0,
+          auction_date_str: data.start_time_str?.split(' ')[0] || '',
+        };
+        const cardEl = card(cardData);
+        document.getElementById('grid').appendChild(cardEl);
+      }
+    } catch(e) { console.error(e); }
+  }
+}
+
+function resetGrid() {
+  if (viewingFavorites) return;
+  page = 1; totalPages = 999;
+  document.getElementById('grid').innerHTML = '';
+  allLots = []; // Lotlarni tozalash
+  // Filtr qilganda ham 2 sahifa yukla
+  (async () => {
+    await loadMore();
+    if (page <= totalPages) {
+      await loadMore();
+    }
+  })();
+}
+
+// Lightbox
+let lbImgs = [], lbCaps = [], lbI = 0;
+function openLightbox(imgs, idx, caps) {
+  lbImgs = imgs; lbCaps = caps || []; lbI = idx;
+  showLb();
+}
+function showLb() {
+  document.getElementById('limg').src = lbImgs[lbI];
+  document.getElementById('lcap').textContent = lbCaps[lbI] || '';
+  document.getElementById('lb').style.display = 'flex';
+  const many = lbImgs.length > 1;
+  document.getElementById('lprev').style.display = many ? 'block' : 'none';
+  document.getElementById('lnext').style.display = many ? 'block' : 'none';
+  const dots = document.getElementById('ldots');
+  if (many) {
+    dots.innerHTML = lbImgs.map((_, i) => `<button class="ldot${i===lbI?' active':''}" data-i="${i}"></button>`).join('');
+    dots.querySelectorAll('.ldot').forEach(d => d.addEventListener('click', () => { lbI=+d.dataset.i; showLb(); }));
+  } else {
+    dots.innerHTML = '';
+  }
+}
+document.getElementById('lclose').onclick = () => document.getElementById('lb').style.display='none';
+document.getElementById('lprev').onclick = () => { lbI=(lbI-1+lbImgs.length)%lbImgs.length; showLb(); };
+document.getElementById('lnext').onclick = () => { lbI=(lbI+1)%lbImgs.length; showLb(); };
+document.getElementById('lb').addEventListener('click', e => { if(e.target===document.getElementById('lb')) document.getElementById('lb').style.display='none'; });
+
+// Modal
+async function openModal(id, name) {
+  document.getElementById('mtitle').textContent = name;
+  document.getElementById('mbody').innerHTML = '<div class="mload"><i class="ti ti-loader-2"></i> Yuklanmoqda...</div>';
+  document.getElementById('modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  try {
+    const d = await fetchLot(id);
+    buildModal(d);
+  } catch(e) {
+    document.getElementById('mbody').innerHTML = '<div class="mload">Xatolik yuz berdi</div>';
+  }
+}
+
+function buildModal(d) {
+  const imgs = (d.confiscant_images_list||[]).map(i=>i.media_url);
+  const caps = (d.confiscant_images_list||[]).map(i=>i.image_positions_name||'');
+  const docs = d.confiscant_documents_list||[];
+  const details = d.confiscant_details_list||[];
+  const infos = d.additional_infos||[];
+  let h = '';
+
+  if (imgs.length) {
+    h += '<div class="gallery">';
+    imgs.forEach((url,i) => h += `<img class="gthumb" src="${url}" alt="${caps[i]||'Rasm'}" title="${caps[i]||''}" data-i="${i}" loading="lazy"/>`);
+    h += '</div>';
+  }
+
+  h += `<div class="pgrid">
+    <div class="pcard"><div class="plbl">Boshlang'ich narx</div><div class="pval" style="color:#0f6e56">${fmt(d.start_price)} UZS</div></div>
+    <div class="pcard"><div class="plbl">Zakalat (${d.zaklad_percent}%)</div><div class="pval">${fmt(Math.round(d.zaklad_summa))} UZS</div></div>
+    <div class="pcard"><div class="plbl">${d.lot_type === 2 ? 'Eng past summa' : 'Keyingi qadam'}</div><div class="pval">${d.lot_type === 2 ? (d.min_summa ? fmt(d.min_summa)+' UZS' : '—') : (d.next_price ? fmt(d.next_price)+' UZS' : '—')}</div></div>
+    <div class="pcard"><div class="plbl">Auksion sanasi</div><div class="pval" style="font-size:14px">${d.start_time_str||'—'}</div></div>
+  </div>`;
+
+  if (details.length) {
+    h += '<div class="stitle"><i class="ti ti-info-circle"></i> Lot ma\'lumotlari</div><div class="dgrid">';
+    details.forEach(item => {
+      h += `<div class="ditem"><div class="dkey">${item.name?.name_uk||item.name?.name_uz||''}</div><div class="dval">${item.detail_value_as_string||'—'}</div></div>`;
+    });
+    h += '</div>';
+  }
+
+  infos.forEach(info => {
+    if (info.type==='info') h += `<div class="infobox"><strong>${info.title?.name_uz||''}</strong><br>${info.description?.name_uz||''}</div>`;
+  });
+
+  const visits = [d.f_visit_time1,d.f_visit_time2,d.f_visit_time3].filter(Boolean);
+  if (visits.length) {
+    h += '<div class="stitle"><i class="ti ti-calendar-event"></i> Ko\'rish vaqtlari</div><div class="visits">';
+    visits.forEach(v => h += `<div class="vitem"><i class="ti ti-clock" style="font-size:16px;color:var(--t2)"></i>${v.replace(/\n\s+/g,' ')}</div>`);
+    h += '</div>';
+  }
+
+  if (d.c_user) {
+    h += '<div class="stitle"><i class="ti ti-building"></i> Sotuvchi</div>';
+    h += `<div class="contact"><strong>${d.c_user.name||'—'}</strong><br><span style="color:var(--t2)">${d.c_user.full_address||''}</span>${d.c_user.phone?`<br><i class="ti ti-phone" style="font-size:13px"></i> ${d.c_user.phone}`:''}</div>`;
+  }
+
+  if (docs.length) {
+    h += '<div class="stitle"><i class="ti ti-file"></i> Hujjatlar</div><div class="docs">';
+    docs.forEach(doc => {
+      const url = `https://media.e-auksion.uz/d/${doc.file_hash}.${doc.extension}`;
+      h += `<a class="doc" href="${url}" target="_blank" rel="noopener"><i class="ti ti-${doc.extension==='pdf'?'file-type-pdf':'file-description'}" style="font-size:18px"></i>${doc.description||doc.file_name}</a>`;
+    });
+    h += '</div>';
+  }
+
+  h += `<a class="applybtn" href="https://e-auksion.uz/lot-view?lot_id=${d.id}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> Rasmiy saytda ko'rish / Ariza berish</a>`;
+  h += `<button type="button" class="telegram-btn" data-lot-id="${d.id}" data-lot-name="${d.name}" title="Telegramga yuborish"><i class="ti ti-brand-telegram"></i> Telegramga yuborish</button>`;
+  h += `<div class="telegram-progress" id="telegram-progress">
+    <div class="telegram-progress-text" id="telegram-status">Tayyorlanmoqda...</div>
+    <div class="progress-bar">
+      <div class="progress-bar-fill" id="telegram-progress-bar"></div>
+    </div>
+  </div>`;
+
+  document.getElementById('mbody').innerHTML = h;
+
+  if (imgs.length) {
+    document.querySelectorAll('.gthumb').forEach(el => {
+      el.addEventListener('click', () => openLightbox(imgs, +el.dataset.i, caps));
+    });
+  }
+
+  // Send to Telegram button event listener
+  const tgBtn = document.querySelector('.telegram-btn');
+  if (tgBtn) {
+    tgBtn.addEventListener('click', () => sendToTelegram(d));
+  }
+}
+
+document.getElementById('mclose').onclick = closeModal;
+document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+function closeModal() { document.getElementById('modal').style.display='none'; document.body.style.overflow=''; }
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') {
+    if (document.getElementById('lb').style.display!=='none') { document.getElementById('lb').style.display='none'; return; }
+    if (document.getElementById('settings-modal').style.display!=='none') { closeSettingsModal(); return; }
+    closeModal();
+  }
+  if (document.getElementById('lb').style.display!=='none') {
+    if (e.key==='ArrowLeft') { lbI=(lbI-1+lbImgs.length)%lbImgs.length; showLb(); }
+    if (e.key==='ArrowRight') { lbI=(lbI+1)%lbImgs.length; showLb(); }
+  }
+});
+
+// ========== Telegram Functionality ==========
+
+// Settings modal functions
+function openSettingsModal() {
+  document.getElementById('settings-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  loadTelegramSettings();
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// Telegram sozlamalarini yuklash
+async function loadTelegramSettings() {
+  try {
+    const settings = await fetch('/telegram-settings').then(r => r.json());
+    document.getElementById('tg-token').value = settings.token || '';
+    document.getElementById('tg-chat-id').value = settings.chat_id || '';
+    clearTgMessage();
+  } catch(e) {
+    showTgMessage('Xatolik yuz berdi', 'error');
+  }
+}
+
+// Telegram sozlamalarini saqlash
+async function saveTelegramSettings(e) {
+  e.preventDefault();
+  const token = document.getElementById('tg-token').value.trim();
+  const chatId = document.getElementById('tg-chat-id').value.trim();
+
+  if (!token || !chatId) {
+    showTgMessage('Barcha maydonlarni to\'ldiring', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/telegram-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, chat_id: chatId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showTgMessage('✓ Sozlamalar saqlandi', 'success');
+      setTimeout(closeSettingsModal, 1500);
+    } else {
+      showTgMessage(data.error || 'Xatolik yuz berdi', 'error');
+    }
+  } catch(e) {
+    showTgMessage('Xatolik yuz berdi: ' + e.message, 'error');
+  }
+}
+
+// Xabar ko'rsatish
+function showTgMessage(msg, type) {
+  const msgEl = document.getElementById('tg-message');
+  msgEl.textContent = msg;
+  msgEl.className = 'tg-message ' + type;
+}
+
+function clearTgMessage() {
+  const msgEl = document.getElementById('tg-message');
+  msgEl.textContent = '';
+  msgEl.className = 'tg-message';
+}
+
+// Lot ma'lumotlarini formatlash va Telegramga yuborish
+async function sendToTelegram(lotData) {
+  const settings = await fetch('/telegram-settings').then(r => r.json());
+  
+  if (!settings.token || !settings.chat_id) {
+    alert('Telegram sozlamalarini avval to\'ldiring (Telegram tugmasini bosing)');
+    return;
+  }
+
+  const btn = document.querySelector('.telegram-btn');
+  const progressEl = document.getElementById('telegram-progress');
+  const statusEl = document.getElementById('telegram-status');
+  const progressBar = document.getElementById('telegram-progress-bar');
+  
+  btn.disabled = true;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Tayyorlanmoqda...';
+  progressEl.classList.add('active');
+
+  try {
+    // Rasmlarni oling (maksimal 9 ta)
+    const photos = (lotData.confiscant_images_list || []).map(img => img.media_url).filter(Boolean).slice(0, 9);
+    
+    statusEl.textContent = '📋 Ma\'lumotlar tayyorlanmoqda...';
+    progressBar.style.width = '15%';
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Lot ma'lumotlarini formatlash - yangi shablon
+    let caption = `<b>🔨 Сотувда ${lotData.name}`;
+    
+    // Chiqarilgan yili (Year of manufacture)
+    let year = '—';
+    let stateNum = '—';
+    let mileage = '—';
+    let condition = '—';
+    let fuel = '—';
+    let region = '—';
+    let district = '—';
+    
+    if (lotData.confiscant_details_list && lotData.confiscant_details_list.length) {
+      lotData.confiscant_details_list.forEach(detail => {
+        const key = (detail.name?.name_uz || detail.name?.name_uk || '').toLowerCase();
+        const val = detail.detail_value_as_string || '';
+        
+        if (key.includes('chiqarilgan') || key.includes('yili') || key.includes('год')) year = val;
+        if (key.includes('davlat') || key.includes('raqami') || key.includes('номер') || key.includes('reg')) stateNum = val;
+        if (key.includes('pробeg') || key.includes('юрган') || key.includes('масофаси') || key.includes('пробег')) mileage = val;
+        if (key.includes('холати') || key.includes('состояние') || key.includes('техник')) condition = val;
+        if (key.includes('газ') || key.includes('топливо') || key.includes('fuel')) fuel = val;
+        if (key.includes('viloyat') || key.includes('область') || key.includes('region')) region = val;
+        if (key.includes('tuman') || key.includes('rayon') || key.includes('район') || key.includes('district')) district = val;
+      });
+    }
+    
+    caption += ` / ${year}\n`;
+    caption += `${stateNum}</b>\n`;
+    caption += `Лот № ${lotData.lot_number}\n\n`;
+    
+    caption += `Савдо: ${lotData.start_time_str || '—'}\n`;
+    caption += `Нархи: ${fmt(lotData.start_price)} UZS\n`;
+    caption += `Закалат: ${fmt(Math.round(lotData.zaklad_summa))} UZS\n`;
+    caption += `Пробег: ${mileage}\n`;
+    caption += `Холати: ${condition}\n`;
+    caption += `Газ: ${fuel}\n`;
+    
+    // Lokatsiya ma'lumotlari
+    let locationInfo = '';
+    if (lotData.region_name.name_uk) {
+      locationInfo += lotData.region_name.name_uk;
+    }
+    if (lotData.area_name.name_uk) {
+      if (locationInfo) locationInfo += ', ';
+      locationInfo += lotData.area_name.name_uk;
+    }
+    if (lotData.joylashgan_manzil) {
+      if (locationInfo) locationInfo += ', ';
+      locationInfo += lotData.joylashgan_manzil;
+    }
+    if (!locationInfo) locationInfo = '—';
+    
+    caption += `${locationInfo}\n`;
+    if (lotData.lat && lotData.lng) {
+      caption += `<a href="https://maps.google.com/maps?q=${lotData.lat},${lotData.lng}">📍 Xaritalarda ko'rish</a>\n\n`;
+    } else {
+      caption += `\n`;
+    }
+    
+    // Izoh/Note
+    let note = '—';
+    if (lotData.additional_infos && lotData.additional_infos.length) {
+      const info = lotData.additional_infos.find(i => i.type === 'info');
+      if (info) {
+        note = info.description?.name_uz || info.description?.name_uk || '—';
+      }
+    }
+    
+    if (note !== '—') {
+      caption += `<blockquote>Изох: ${note}</blockquote>\n\n`;
+    }
+    
+    caption += `<b>Қизиқдингизми? Ариза топширишга улгуринг!</b>\n\n`;
+    caption += `+998 88 828 8222\n`;
+    caption += `@auksion_admin \n\n`;
+    caption += `<b>Подписка 👉 @avto_auksion_uz </b>`;
+
+    if (photos.length > 0) {
+      // Rasmlarni avval server'ga upload qilish
+      statusEl.textContent = `📥 ${photos.length} ta rasm yuklanmoqda...`;
+      progressBar.style.width = '35%';
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const uploadRes = await fetch('/upload-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photos: photos })
+      });
+
+      const uploadData = await uploadRes.json();
+      if (!uploadData.success || !uploadData.local_urls || uploadData.local_urls.length === 0) {
+        throw new Error('Rasmlar upload qilishda xatolik');
+      }
+
+      // Local URL'larni Telegram'ga yuborish
+      statusEl.textContent = `📸 Rasmlar guruxlanib yuborilmoqda...`;
+      progressBar.style.width = '70%';
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const res = await fetch('/send-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          local_urls: uploadData.local_urls,
+          caption: caption
+        })
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Xatolik yuz berdi');
+      }
+    } else {
+      // Agar rasm bo'lmasa, text bilan yuborish
+      statusEl.textContent = '✉️ Xabar yuborilmoqda...';
+      progressBar.style.width = '70%';
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const res = await fetch('/send-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: caption })
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Xatolik yuz berdi');
+      }
+    }
+
+    statusEl.textContent = '✅ Yuborildi!';
+    progressBar.style.width = '100%';
+    
+    btn.innerHTML = '<i class="ti ti-check"></i> Yuborildi!';
+    btn.style.background = '#28a745';
+    
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      btn.style.background = '';
+      progressEl.classList.remove('active');
+      progressBar.style.width = '0%';
+    }, 2000);
+  } catch(e) {
+    statusEl.textContent = '❌ Xatolik: ' + e.message;
+    progressBar.style.width = '100%';
+    progressBar.style.background = '#c41e3a';
+    
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    
+    setTimeout(() => {
+      progressEl.classList.remove('active');
+      progressBar.style.width = '0%';
+      progressBar.style.background = '#185fa5';
+    }, 3000);
+  }
+}
+
+// Settings modal events
+document.getElementById('settings-close').onclick = closeSettingsModal;
+document.getElementById('settings-modal').addEventListener('click', e => {
+  if(e.target === document.getElementById('settings-modal')) closeSettingsModal();
+});
+document.getElementById('settings-form').addEventListener('submit', saveTelegramSettings);
+
+// Settings button event
+document.getElementById('f-settings').addEventListener('click', openSettingsModal);
+</script>
+</body>
+</html>
