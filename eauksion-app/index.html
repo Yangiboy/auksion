@@ -667,7 +667,10 @@ function buildModal(d) {
 
   if (imgs.length) {
     document.querySelectorAll('.gthumb').forEach(el => {
-      el.addEventListener('click', () => openLightbox(imgs, +el.dataset.i, caps));
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(imgs, +el.dataset.i, caps);
+      });
     });
   }
 
@@ -679,7 +682,7 @@ function buildModal(d) {
 }
 
 document.getElementById('mclose').onclick = closeModal;
-document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+document.getElementById('modal').addEventListener('click', e => { if(e.currentTarget === e.target) closeModal(); });
 function closeModal() { document.getElementById('modal').style.display='none'; document.body.style.overflow=''; }
 
 document.addEventListener('keydown', e => {
@@ -936,7 +939,7 @@ async function sendToTelegram(lotData) {
 // Settings modal events
 document.getElementById('settings-close').onclick = closeSettingsModal;
 document.getElementById('settings-modal').addEventListener('click', e => {
-  if(e.target === document.getElementById('settings-modal')) closeSettingsModal();
+  if(e.currentTarget === e.target) closeSettingsModal();
 });
 document.getElementById('settings-form').addEventListener('submit', saveTelegramSettings);
 
