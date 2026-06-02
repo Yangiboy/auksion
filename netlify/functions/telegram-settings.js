@@ -1,8 +1,10 @@
-const { promises: fs } = require('fs');
-const path = require('path');
-
-// In production, store these in environment variables or a database
-let telegramSettings = { token: '', chat_id: '' };
+// Telegram sozlamalarni environment variables dan olish
+function getTelegramSettings() {
+  return {
+    token: process.env.TELEGRAM_TOKEN || '',
+    chat_id: process.env.TELEGRAM_CHAT_ID || ''
+  };
+}
 
 exports.handler = async (event) => {
   const headers = {
@@ -19,25 +21,47 @@ exports.handler = async (event) => {
 
   try {
     if (event.httpMethod === 'GET') {
-      // Return current telegram settings
+      // Environment variables'dan Telegram sozlamalarini qaytarish
+      const settings = getTelegramSettings();
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(telegramSettings)
+        body: JSON.stringify(settings)
       };
     }
 
     if (event.httpMethod === 'POST') {
       const data = JSON.parse(event.body);
-      telegramSettings = {
-        token: data.token || '',
-        chat_id: data.chat_id || ''
-      };
+      
+      // ESLATMA: Netlify Functions'da environment variables'ni dinamik o'zgartirib bo'lmaydi.
+      // Ushbu endpoint faqat sozlamalarni tekshirish uchun hisoblanadi.
+      // Settings o'zgartirishni Netlify UI yoki CLI orqali qilish kerak:
+      //   netlify env:set TELEGRAM_TOKEN "your-token"
+      //   netlify env:set TELEGRAM_CHAT_ID "your-chat-id"
+      
+      // Ayni payt, faqat mavjud sozlamalarni qaytaramiz
+      const settings = getTelegramSettings();
+      
+      if (!settings.token || !settings.chat_id) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ 
+            error: 'Telegram sozlamalari to\'ldirilmagan. Netlify Site Settings > Build & deploy > Environment bo\'limida sozlang.',
+            info: 'TELEGRAM_TOKEN va TELEGRAM_CHAT_ID environment variables ni o\'rnating'
+          })
+        };
+      }
       
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ success: true })
+        body: JSON.stringify({ 
+          success: true,
+          message: 'Telegram sozlamalari topildi',
+          has_token: !!settings.token,
+          has_chat_id: !!settings.chat_id
+        })
       };
     }
 

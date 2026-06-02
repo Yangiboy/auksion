@@ -17,6 +17,12 @@
   force = true
 
 [[redirects]]
+  from = "/send-telegram"
+  to = "/.netlify/functions/send-telegram"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/favorites"
   to = "/.netlify/functions/favorites"
   status = 200
