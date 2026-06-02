@@ -1,0 +1,17 @@
+{
+  "name": "eauksion-app",
+  "version": "1.0.0",
+  "description": "E-Auksion - Avtomobil lotlari",
+  "main": "eauksion-app/server.js",
+  "scripts": {
+    "start": "node eauksion-app/server.js",
+    "dev": "node eauksion-app/server.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

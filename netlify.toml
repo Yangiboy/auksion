@@ -1,9 +1,14 @@
 [build]
-  command = ""
+  command = "npm ci"
   publish = "eauksion-app"
   functions = "netlify/functions"
 
-# API endpoints - must be before catch-all
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
 [[redirects]]
   from = "/api/front/lots"
   to = "/.netlify/functions/fetch-lots"

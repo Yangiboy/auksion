@@ -182,9 +182,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg3);color:
   </div>
   <button class="fbtn fbtn-apply" id="f-apply"><i class="ti ti-search"></i> Qidirish</button>
   <button class="fbtn fbtn-clear" id="f-clear"><i class="ti ti-x"></i> Tozalash</button>
-  <!-- <button class="fbt
-  n" id="f-favorites" style="margin-left:auto;background:var(--bgw);color:var(--tw)"><i class="ti ti-heart-filled"></i> Sevimlilar <span id="fav-count" style="background:rgba(0,0,0,.15);border-radius:50%;padding:2px 6px;margin-left:4px;font-size:11px">0</span></button>
-  <button class="fbtn" id="f-settings" style="background:var(--bgd);color:var(--td)"><i class="ti ti-settings"></i> Telegram</button> -->
+  <button class="fbtn" id="f-favorites" style="margin-left:auto;background:var(--bgw);color:var(--tw)"><i class="ti ti-heart-filled"></i> Sevimlilar <span id="fav-count" style="background:rgba(0,0,0,.15);border-radius:50%;padding:2px 6px;margin-left:4px;font-size:11px">0</span></button>
+  <button class="fbtn" id="f-settings" style="background:var(--bgd);color:var(--td)"><i class="ti ti-settings"></i> Telegram</button>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -584,7 +583,7 @@ function showLb() {
 document.getElementById('lclose').onclick = () => document.getElementById('lb').style.display='none';
 document.getElementById('lprev').onclick = () => { lbI=(lbI-1+lbImgs.length)%lbImgs.length; showLb(); };
 document.getElementById('lnext').onclick = () => { lbI=(lbI+1)%lbImgs.length; showLb(); };
-document.getElementById('lb').addEventListener('click', e => { if(e.target===document.getElementById('lb')) document.getElementById('lb').style.display='none'; });
+document.getElementById('lb').addEventListener('click', e => { if(e.currentTarget===e.target) document.getElementById('lb').style.display='none'; });
 
 // Modal
 async function openModal(id, name) {
@@ -666,12 +665,15 @@ function buildModal(d) {
   document.getElementById('mbody').innerHTML = h;
 
   if (imgs.length) {
-    document.querySelectorAll('.gthumb').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openLightbox(imgs, +el.dataset.i, caps);
+    const gallery = document.querySelector('.gallery');
+    if (gallery) {
+      gallery.addEventListener('click', (e) => {
+        if (e.target.classList.contains('gthumb')) {
+          e.stopPropagation();
+          openLightbox(imgs, +e.target.dataset.i, caps);
+        }
       });
-    });
+    }
   }
 
   // Send to Telegram button event listener
@@ -681,9 +683,13 @@ function buildModal(d) {
   }
 }
 
-document.getElementById('mclose').onclick = closeModal;
-document.getElementById('modal').addEventListener('click', e => { if(e.currentTarget === e.target) closeModal(); });
 function closeModal() { document.getElementById('modal').style.display='none'; document.body.style.overflow=''; }
+
+// Modal event listeners - set up once
+const modalEl = document.getElementById('modal');
+const mcloseBtn = document.getElementById('mclose');
+if (mcloseBtn) mcloseBtn.addEventListener('click', closeModal);
+if (modalEl) modalEl.addEventListener('click', e => { if(e.currentTarget === e.target) closeModal(); });
 
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') {
@@ -936,15 +942,19 @@ async function sendToTelegram(lotData) {
   }
 }
 
-// Settings modal events
-document.getElementById('settings-close').onclick = closeSettingsModal;
-document.getElementById('settings-modal').addEventListener('click', e => {
+// Settings modal events - set up once
+const settingsCloseBtn = document.getElementById('settings-close');
+const settingsModal = document.getElementById('settings-modal');
+const settingsForm = document.getElementById('settings-form');
+if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', closeSettingsModal);
+if (settingsModal) settingsModal.addEventListener('click', e => {
   if(e.currentTarget === e.target) closeSettingsModal();
 });
-document.getElementById('settings-form').addEventListener('submit', saveTelegramSettings);
+if (settingsForm) settingsForm.addEventListener('submit', saveTelegramSettings);
 
 // Settings button event
-document.getElementById('f-settings').addEventListener('click', openSettingsModal);
+const settingsBtn = document.getElementById('f-settings');
+if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
 </script>
 </body>
 </html>
