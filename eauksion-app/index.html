@@ -711,7 +711,7 @@ function closeSettingsModal() {
 // Telegram sozlamalarini yuklash
 async function loadTelegramSettings() {
   try {
-    const settings = await fetch('/telegram-settings').then(r => r.json());
+    const settings = await fetch('/.netlify/functions/telegram-settings').then(r => r.json());
     document.getElementById('tg-token').value = settings.token || '';
     document.getElementById('tg-chat-id').value = settings.chat_id || '';
     clearTgMessage();
@@ -732,7 +732,7 @@ async function saveTelegramSettings(e) {
   }
 
   try {
-    const res = await fetch('/telegram-settings', {
+    const res = await fetch('/.netlify/functions/telegram-settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, chat_id: chatId })
@@ -764,7 +764,7 @@ function clearTgMessage() {
 
 // Lot ma'lumotlarini formatlash va Telegramga yuborish
 async function sendToTelegram(lotData) {
-  const settings = await fetch('/telegram-settings').then(r => r.json());
+  const settings = await fetch('/.netlify/functions/telegram-settings').then(r => r.json());
   
   if (!settings.token || !settings.chat_id) {
     alert('Telegram sozlamalarini avval to\'ldiring (Telegram tugmasini bosing)');
@@ -868,32 +868,16 @@ async function sendToTelegram(lotData) {
     caption += `<b>Подписка 👉 @avto_auksion_uz </b>`;
 
     if (photos.length > 0) {
-      // Rasmlarni avval server'ga upload qilish
-      statusEl.textContent = `📥 ${photos.length} ta rasm yuklanmoqda...`;
-      progressBar.style.width = '35%';
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const uploadRes = await fetch('/upload-photos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: photos })
-      });
-
-      const uploadData = await uploadRes.json();
-      if (!uploadData.success || !uploadData.local_urls || uploadData.local_urls.length === 0) {
-        throw new Error('Rasmlar upload qilishda xatolik');
-      }
-
-      // Local URL'larni Telegram'ga yuborish
-      statusEl.textContent = `📸 Rasmlar guruxlanib yuborilmoqda...`;
+      // Rasmlarni Telegram'ga yuborish
+      statusEl.textContent = `📸 ${photos.length} ta rasm yuborilmoqda...`;
       progressBar.style.width = '70%';
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      const res = await fetch('/send-telegram', {
+      const res = await fetch('/.netlify/functions/send-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          local_urls: uploadData.local_urls,
+          photo_urls: photos,
           caption: caption
         })
       });
@@ -908,7 +892,7 @@ async function sendToTelegram(lotData) {
       progressBar.style.width = '70%';
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      const res = await fetch('/send-telegram', {
+      const res = await fetch('/.netlify/functions/send-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: caption })
