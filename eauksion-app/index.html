@@ -327,9 +327,7 @@ async function fetchLots(p) {
 }
 
 async function fetchLot(id) {
-  const r = await fetch('/api/front/lot-info?lot_id='+id+'&lang=uk', {
-    headers:{authorization:TOKEN}
-  });
+  const r = await fetch('/.netlify/functions/fetch-lot-info?lot_id='+id+'&lang=uk');
   return r.json();
 }
 
