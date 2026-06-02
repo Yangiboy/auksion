@@ -4,12 +4,14 @@
 // URL ning to'g'ri ekanligini tekshirish
 function isValidUrl(url) {
   try {
-    if (!url) return false;
+    if (!url || typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (!trimmed) return false;
     // HTTP yoki HTTPS bilan boshlashi kerak
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
       return false;
     }
-    new URL(url);
+    new URL(trimmed);
     return true;
   } catch {
     return false;
@@ -97,9 +99,16 @@ async function sendTelegramPhoto(token, chatId, photoUrl, caption) {
 async function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
   const url = `https://api.telegram.org/bot${token}/sendMediaGroup`;
   
-  const media = photoUrls.map((photoUrl, index) => ({
+  // Filter out empty or invalid URLs
+  const cleanUrls = photoUrls.filter(url => url && typeof url === 'string' && url.trim().length > 0);
+  
+  if (cleanUrls.length === 0) {
+    throw new Error('No valid photo URLs provided for media group');
+  }
+  
+  const media = cleanUrls.map((photoUrl, index) => ({
     type: 'photo',
-    media: photoUrl,
+    media: photoUrl.trim(),
     caption: index === 0 ? caption : '',
     parse_mode: 'HTML'
   }));
@@ -109,7 +118,7 @@ async function sendTelegramMediaGroup(token, chatId, photoUrls, caption) {
     media: media
   };
 
-  console.log('📸 Sending media group with', photoUrls.length, 'photos');
+  console.log('📸 Sending media group with', cleanUrls.length, 'photos');
   
   const response = await fetchWithTimeout(url, {
     method: 'POST',
@@ -181,6 +190,13 @@ exports.handler = async (event) => {
       if (validPhotoUrls.length === 0) {
         console.warn('⚠️ No valid photo URLs found. Sending text only.');
         console.warn('Received URLs:', data.photo_urls);
+        console.warn('URL validation details:', data.photo_urls.map((url, idx) => ({
+          index: idx,
+          url: url,
+          isValid: isValidUrl(url),
+          isEmpty: !url || (typeof url === 'string' && !url.trim()),
+          isString: typeof url === 'string'
+        })));
         // Faqat text bilan yuborish
         await sendTelegramMessage(token, chatId, data.caption || 'No caption provided');
       } else if (validPhotoUrls.length === 1) {
