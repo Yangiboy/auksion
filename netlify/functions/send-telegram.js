@@ -201,12 +201,14 @@ exports.handler = async (event) => {
       body: JSON.stringify({ success: true })
     };
   } catch (error) {
-    console.error('Telegram xatosi:', error);
+    const errorMsg = error?.error || error?.message || JSON.stringify(error) || 'Noma\'lum xato';
+    console.error('Telegram xatosi:', errorMsg);
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: error.error || error.message || 'Noma\'lum xato' 
+        error: errorMsg,
+        success: false
       })
     };
   }
