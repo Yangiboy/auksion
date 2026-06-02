@@ -318,9 +318,9 @@ function buildBody(p) {
 }
 
 async function fetchLots(p) {
-  const r = await fetch('/api/front/lots', {
+  const r = await fetch('/.netlify/functions/fetch-lots', {
     method:'POST',
-    headers:{'Content-Type':'application/json', authorization:TOKEN},
+    headers:{'Content-Type':'application/json'},
     body: JSON.stringify(buildBody(p))
   });
   return r.json();
